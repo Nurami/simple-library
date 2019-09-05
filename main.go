@@ -23,3 +23,8 @@ func main() {
 func helloHandler(rw http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(rw, "hello world")
 }
+
+func addNoteHandler(rw http.ResponseWriter, r *http.Request) {
+}
+func changeStatusHandler(rw http.ResponseWriter, r *http.Request) {
+}
