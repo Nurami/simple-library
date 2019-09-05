@@ -3,7 +3,17 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 )
+
+type note struct {
+	ID             string
+	BookName       string
+	EmergenceDate  time.Time
+	BuyingDate     time.Time
+	ReadingEndDate time.Time
+	Status         string
+}
 
 func main() {
 	http.HandleFunc("/hello", helloHandler)
