@@ -7,7 +7,7 @@ import (
 )
 
 type note struct {
-	ID             string
+	ID             int
 	BookName       string
 	EmergenceDate  time.Time
 	BuyingDate     time.Time
