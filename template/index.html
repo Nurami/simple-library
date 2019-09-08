@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<input type="text" id="textField">
+<input type="button" value="Add" onclick="add()">
+<p><b>want</b></p>
+{{with .WantNotes}}
+    {{range .}}
+        {{.BookName}}
+        <input type="button" value="b" onclick="changeStatus(this.id)" id="{{.ID}}">
+        <br>
+    {{end}}
+{{end}}
+<p><b>bought</b></p>
+{{with .BoughtNotes}}
+    {{range .}}
+        {{.BookName}}
+        <input type="button" value="b" onclick="changeStatus(this.id)" id="{{.ID}}">
+        <br>
+    {{end}}
+{{end}}
+<p><b>read</b></p>
+{{with .ReadNotes}}
+    {{range .}}
+        {{.BookName}}
+    {{end}}
+{{end}}
+
+<script>
+    function add(){
+        var bookName = document.getElementById("textField").value;
+        var response = sendRequest(bookName, 'http://localhost:8080/addNote');
+        if (response == "success") {
+            alert(response);
+            location.reload();
+        } else {
+            alert(response);
+        };
+    };
+
+    function changeStatus(clickedID){
+        var response = sendRequest(clickedID, 'http://localhost:8080/changeStatus');
+        if (response == "success") {
+            alert(response);
+            location.reload();
+        } else {
+            alert(response);
+        };
+    }
+    
+    function sendRequest(data, url){
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', url, false);
+        xhr.send(data);
+        if (xhr.status != 200) {
+            console.log( xhr.status + ': ' + xhr.statusText );
+        } else {
+            return xhr.responseText;
+        };
+    }
+</script>
