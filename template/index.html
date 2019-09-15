@@ -1,31 +1,62 @@
 <!DOCTYPE html>
-<input type="text" id="textField">
-<input type="button" value="Add" onclick="add()">
-<p><b>want</b></p>
-{{with .WantNotes}}
-    {{range .}}
-        {{.BookName}}
-        <input type="button" value="b" onclick="changeStatus(this.id)" id="{{.ID}}">
-        <br>
-    {{end}}
-{{end}}
-<p><b>bought</b></p>
-{{with .BoughtNotes}}
-    {{range .}}
-        {{.BookName}}
-        <input type="button" value="b" onclick="changeStatus(this.id)" id="{{.ID}}">
-        <br>
-    {{end}}
-{{end}}
-<p><b>read</b></p>
-{{with .ReadNotes}}
-    {{range .}}
-        {{.BookName}}
-    {{end}}
-{{end}}
+
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+</head>
+<style type="text/css">
+    .status {
+        font-size: 25px;
+        margin-top: 15px;
+        margin-bottom: 15px;
+    }
+</style>
+<div class="container-fluid" style="text-align: center">
+    <div class="row">
+        <div class="col">
+        </div>
+        <div class="col">
+            <span class="badge badge-pill badge-dark status">want</span>
+            {{with .WantNotes}}
+            {{range .}}
+            <input type="button" value="{{.BookName}}" class="btn btn-info btn-sm btn-block"
+                onclick="changeStatus(this.id)" id="{{.ID}}">
+            {{end}}
+            {{end}}
+            <div class="input-group input-group-sm mb-3" style="margin-top: 9px">
+                <input id="textField" type="text" class="form-control" placeholder="Name of book"
+                    aria-label="Name of book" aria-describedby="button-addon2">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-primary btn-sm" type="button" onclick="add()"
+                        id="button-addon2">Add</button>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <span class="badge badge-pill badge-dark status">bought</span>
+            {{with .BoughtNotes}}
+            {{range .}}
+            <input type="button" value="{{.BookName}}" class="btn btn-primary btn-sm btn-block"
+                onclick="changeStatus(this.id)" id="{{.ID}}">
+            {{end}}
+            {{end}}
+        </div>
+        <div class="col">
+            <span class="badge badge-pill badge-dark status">read</span>
+            {{with .ReadNotes}}
+            {{range .}}
+            <input type="button" value="{{.BookName}}" class="btn btn-success btn-sm btn-block" id="{{.ID}}" disabled>
+            {{end}}
+            {{end}}
+        </div>
+        <div class="col">
+        </div>
+    </div>
+</div>
+<br>
 
 <script>
-    function add(){
+    function add() {
         var bookName = document.getElementById("textField").value;
         var response = sendRequest(bookName, 'http://localhost:8080/addNote');
         if (response == "success") {
@@ -36,7 +67,7 @@
         };
     };
 
-    function changeStatus(clickedID){
+    function changeStatus(clickedID) {
         var response = sendRequest(clickedID, 'http://localhost:8080/changeStatus');
         if (response == "success") {
             alert(response);
@@ -45,13 +76,13 @@
             alert(response);
         };
     }
-    
-    function sendRequest(data, url){
+
+    function sendRequest(data, url) {
         var xhr = new XMLHttpRequest();
         xhr.open('POST', url, false);
         xhr.send(data);
         if (xhr.status != 200) {
-            console.log( xhr.status + ': ' + xhr.statusText );
+            console.log(xhr.status + ': ' + xhr.statusText);
         } else {
             return xhr.responseText;
         };
