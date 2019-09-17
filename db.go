@@ -67,5 +67,9 @@ func changeDateAndStatusOfNote(note note) error {
 	note.Status = "bought"
 	_, err := db.Exec("UPDATE note SET buying_date = $1, status = $2 WHERE id = $3", note.BuyingDate, note.Status, note.ID)
 	return err
+}
 
+func createUser(u userAccount) error {
+	_, err := db.Exec("INSERT INTO user_account(name, email, password) VALUES ($1, $2, $3)", u.Name, u.Email, u.Password)
+	return err
 }

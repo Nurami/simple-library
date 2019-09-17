@@ -9,6 +9,12 @@ import (
 	"time"
 )
 
+type userAccount struct {
+	ID       int
+	Name     string
+	Email    string
+	Password string
+}
 type note struct {
 	ID             int
 	BookName       string
