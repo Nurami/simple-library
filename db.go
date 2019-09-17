@@ -69,7 +69,11 @@ func changeDateAndStatusOfNote(note note) error {
 	return err
 }
 
-func createUser(u userAccount) error {
-	_, err := db.Exec("INSERT INTO user_account(name, email, password) VALUES ($1, $2, $3)", u.Name, u.Email, u.Password)
+func createUserAccount(u userAccount) error {
+	passwordHash, err := hashPassword(u.Password)
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("INSERT INTO user_account(name, email, password) VALUES ($1, $2, $3)", u.Name, u.Email, passwordHash)
 	return err
 }
