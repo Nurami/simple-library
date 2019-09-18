@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"text/template"
 	"time"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 type userAccount struct {
@@ -30,12 +32,16 @@ type notesByStatus struct {
 	ReadNotes   []note
 }
 
+var (
+	tokens map[string]int
+)
+
 func main() {
 
 	connectToDB()
 
 	http.HandleFunc("/hello", helloHandler)
-	http.HandleFunc("/library", libraryHandler)
+	http.HandleFunc("/library", auth(libraryHandler))
 	http.HandleFunc("/addNote", addNoteHandler)
 	http.HandleFunc("/changeStatus", changeStatusHandler)
 	http.ListenAndServe(":8080", nil)
@@ -103,6 +109,46 @@ func createUserAccountHandler(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	rw.Write([]byte("success"))
+}
+
+func signin(rw http.ResponseWriter, r *http.Request) {
+	supposedUA := userAccount{}
+	err := json.NewDecoder(r.Body).Decode(&supposedUA)
+	if err != nil {
+		rw.Write([]byte("badrequest"))
+		return
+	}
+	currentUA, err := getUserAccount(supposedUA.Email)
+	if err != nil {
+		rw.Write([]byte("something wrong"))
+		return
+	}
+	if checkPasswordHash(supposedUA.Password, currentUA.Password) {
+		newSessionToken := uuid.Must(uuid.NewV4()).String()
+		tokens[newSessionToken] = 0
+		http.SetCookie(rw, &http.Cookie{
+			Name:    "session_token",
+			Value:   newSessionToken,
+			Expires: time.Now().Add(time.Second * 120),
+		})
+	} else {
+		rw.Write([]byte("wrong password"))
+	}
+
+}
+
+func auth(f http.HandlerFunc) http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		c, err := r.Cookie("session_token")
+		if err != nil {
+			log.Println(err)
+			rw.Write([]byte("where is my cookie"))
+			return
+		}
+		if _, ok := tokens[c.Value]; ok {
+			f(rw, r)
+		}
+	}
 }
 
 func (nbs *notesByStatus) create(notes []note) {
