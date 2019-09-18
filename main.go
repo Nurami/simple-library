@@ -39,11 +39,13 @@ var (
 func main() {
 
 	connectToDB()
+	tokens = make(map[string]int)
 
 	http.HandleFunc("/hello", helloHandler)
 	http.HandleFunc("/library", auth(libraryHandler))
 	http.HandleFunc("/addNote", addNoteHandler)
 	http.HandleFunc("/changeStatus", changeStatusHandler)
+	http.HandleFunc("/signin", signin)
 	http.ListenAndServe(":8080", nil)
 }
 
@@ -112,29 +114,39 @@ func createUserAccountHandler(rw http.ResponseWriter, r *http.Request) {
 }
 
 func signin(rw http.ResponseWriter, r *http.Request) {
-	supposedUA := userAccount{}
-	err := json.NewDecoder(r.Body).Decode(&supposedUA)
-	if err != nil {
-		rw.Write([]byte("badrequest"))
-		return
-	}
-	currentUA, err := getUserAccount(supposedUA.Email)
-	if err != nil {
-		rw.Write([]byte("something wrong"))
-		return
-	}
-	if checkPasswordHash(supposedUA.Password, currentUA.Password) {
-		newSessionToken := uuid.Must(uuid.NewV4()).String()
-		tokens[newSessionToken] = 0
-		http.SetCookie(rw, &http.Cookie{
-			Name:    "session_token",
-			Value:   newSessionToken,
-			Expires: time.Now().Add(time.Second * 120),
-		})
+	if r.Method == http.MethodGet {
+		tmpl, err := template.ParseFiles("template/signin.html")
+		if err != nil {
+			log.Println(err)
+			fmt.Fprint(rw, "something wrong")
+		}
+		tmpl.Execute(rw, nil)
 	} else {
-		rw.Write([]byte("wrong password"))
+		supposedUA := userAccount{}
+		err := json.NewDecoder(r.Body).Decode(&supposedUA)
+		if err != nil {
+			fmt.Println(err)
+			rw.Write([]byte("badrequest"))
+			return
+		}
+		currentUA, err := getUserAccount(supposedUA.Email)
+		if err != nil {
+			rw.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if checkPasswordHash(supposedUA.Password, currentUA.Password) {
+			newSessionToken := uuid.Must(uuid.NewV4()).String()
+			tokens[newSessionToken] = 0
+			http.SetCookie(rw, &http.Cookie{
+				Name:    "session_token",
+				Value:   newSessionToken,
+				Expires: time.Now().Add(time.Second * 120),
+			})
+		} else {
+			rw.WriteHeader(http.StatusUnauthorized)
+			rw.Write([]byte("wrong password"))
+		}
 	}
-
 }
 
 func auth(f http.HandlerFunc) http.HandlerFunc {
@@ -142,11 +154,13 @@ func auth(f http.HandlerFunc) http.HandlerFunc {
 		c, err := r.Cookie("session_token")
 		if err != nil {
 			log.Println(err)
-			rw.Write([]byte("where is my cookie"))
+			rw.Write([]byte("who are you?"))
 			return
 		}
 		if _, ok := tokens[c.Value]; ok {
 			f(rw, r)
+		} else {
+			rw.Write([]byte("bad cookie"))
 		}
 	}
 }
