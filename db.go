@@ -78,12 +78,13 @@ func createUserAccount(u userAccount) error {
 	return err
 }
 
-func getUserAccount(email, password string) userAccount {
+func getUserAccount(email string) (userAccount, error) {
 	row := db.QueryRow("SELECT * FROM user_account WHERE email=$1", email)
 	uA := userAccount{}
 	err := row.Scan(&uA.ID, &uA.Name, &uA.Email, &uA.Password)
 	if err != nil {
 		log.Println(err)
+		return userAccount{}, err
 	}
-	return uA
+	return uA, nil
 }
