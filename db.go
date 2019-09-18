@@ -77,3 +77,13 @@ func createUserAccount(u userAccount) error {
 	_, err = db.Exec("INSERT INTO user_account(name, email, password) VALUES ($1, $2, $3)", u.Name, u.Email, passwordHash)
 	return err
 }
+
+func getUserAccount(email, password string) userAccount {
+	row := db.QueryRow("SELECT * FROM user_account WHERE email=$1", email)
+	uA := userAccount{}
+	err := row.Scan(&uA.ID, &uA.Name, &uA.Email, &uA.Password)
+	if err != nil {
+		log.Println(err)
+	}
+	return uA
+}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -10,10 +11,10 @@ import (
 )
 
 type userAccount struct {
-	ID       int
-	Name     string
-	Email    string
-	Password string
+	ID       int    `json:"id"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 type note struct {
 	ID             int
@@ -90,6 +91,18 @@ func changeStatusHandler(rw http.ResponseWriter, r *http.Request) {
 		}
 	}
 	rw.Write([]byte(message))
+}
+
+func createUserAccountHandler(rw http.ResponseWriter, r *http.Request) {
+	uA := &userAccount{}
+	json.NewDecoder(r.Body).Decode(uA)
+	err := createUserAccount(*uA)
+	if err != nil {
+		log.Println(err)
+		rw.Write([]byte("something wrong"))
+		return
+	}
+	rw.Write([]byte("success"))
 }
 
 func (nbs *notesByStatus) create(notes []note) {
