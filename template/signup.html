@@ -5,32 +5,53 @@
         integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 </head>
 
-<form>
-    <span>Name</span>
-    <input id="name" type="text">
-    <span>Email</span>
-    <input id="email" type="text">
-    <span>Password</span>
-    <input id="password" type="password">
-    <input type="button" value="Sign up" onclick="sendRequest()">
-</form>
+<style>
+    .center {
+        margin-top: 12%;
+        margin-left: 40%;
+        margin-right: 40%;
+    }
+</style>
+
+<div class="center">
+    <form>
+        <div style="text-align: center">
+            <h1><span class="badge badge-pill badge-primary">REGISTRATION</span></h1>
+        </div>
+        <div class="form-group">
+            <input id="name" type="text" placeholder="Name" class="form-control">
+        </div>
+        <div class="form-group">
+            <input id="email" type="text" placeholder="Email" class="form-control">
+        </div>
+        <div class="form-group">
+            <input id="password" type="password" placeholder="Password" class="form-control">
+        </div>
+        <input type="button" value="Sign up" onclick="sendRequest()" class="btn btn-primary btn-block">
+    </form>
+    <div style="text-align: center">
+        or
+        <br>
+        <a href="/signin">Sign in</a>
+    </div>
+</div>
 
 <script>
-        function sendRequest() {
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', '/signup', false);
-            xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-            var data = {
-                email: document.getElementById("email").value,
-                password: document.getElementById("password").value,
-                name: document.getElementById("name").value,
-            }
-            xhr.send(JSON.stringify(data));
-            if (xhr.status != 200) {
-                alert(xhr.status + ': ' + xhr.statusText + ': ' + xhr.responseText);
-            } else {
-                alert("success")
-                window.location.replace('/signin');
-            };
+    function sendRequest() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/signup', false);
+        xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+        var data = {
+            email: document.getElementById("email").value,
+            password: document.getElementById("password").value,
+            name: document.getElementById("name").value,
         }
-    </script>
+        xhr.send(JSON.stringify(data));
+        if (xhr.status != 200) {
+            alert(xhr.status + ': ' + xhr.statusText + ': ' + xhr.responseText);
+        } else {
+            alert("success")
+            window.location.replace('/signin');
+        };
+    }
+</script>
