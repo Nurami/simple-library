@@ -46,6 +46,7 @@ func main() {
 	http.HandleFunc("/addNote", addNoteHandler)
 	http.HandleFunc("/changeStatus", changeStatusHandler)
 	http.HandleFunc("/signin", signin)
+	http.HandleFunc("/signup", createUserAccountHandler)
 	http.ListenAndServe(":8080", nil)
 }
 
@@ -102,15 +103,26 @@ func changeStatusHandler(rw http.ResponseWriter, r *http.Request) {
 }
 
 func createUserAccountHandler(rw http.ResponseWriter, r *http.Request) {
-	uA := &userAccount{}
-	json.NewDecoder(r.Body).Decode(uA)
-	err := createUserAccount(*uA)
-	if err != nil {
-		log.Println(err)
-		rw.Write([]byte("something wrong"))
-		return
+	if r.Method == http.MethodGet {
+		tmpl, err := template.ParseFiles("template/signup.html")
+		if err != nil {
+			log.Println(err)
+			fmt.Fprint(rw, "something wrong")
+		}
+		tmpl.Execute(rw, nil)
+	} else {
+		uA := &userAccount{}
+		json.NewDecoder(r.Body).Decode(uA)
+		err := createUserAccount(*uA)
+		if err != nil {
+			log.Println(err)
+			rw.WriteHeader(http.StatusBadRequest)
+			rw.Write([]byte("something wrong"))
+			return
+		}
+		rw.WriteHeader(http.StatusOK)
+		rw.Write([]byte("success"))
 	}
-	rw.Write([]byte("success"))
 }
 
 func signin(rw http.ResponseWriter, r *http.Request) {
