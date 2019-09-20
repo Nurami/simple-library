@@ -25,6 +25,7 @@ type note struct {
 	BuyingDate     time.Time
 	ReadingEndDate time.Time
 	Status         string
+	UserAccountID  int
 }
 type notesByStatus struct {
 	WantNotes   []note
@@ -60,7 +61,13 @@ func libraryHandler(rw http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		fmt.Fprint(rw, "something wrong")
 	}
-	notes := getNotes()
+	c, err := r.Cookie("session_token")
+	if err != nil {
+		log.Println(err)
+		rw.Write([]byte("something wrong"))
+		return
+	}
+	notes := getNotesByUserAccountID(tokens[c.Value])
 	nbs := notesByStatus{}
 	nbs.create(notes)
 	tmpl.Execute(rw, nbs)
@@ -72,10 +79,16 @@ func addNoteHandler(rw http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 	bookName := string(body)
+	c, err := r.Cookie("session_token")
+	if err != nil {
+		log.Println(err)
+		rw.Write([]byte("something wrong"))
+		return
+	}
 	message := "Name of book is empty"
 	if bookName != "" {
 		message = "success"
-		note := note{BookName: bookName, EmergenceDate: time.Now(), Status: "want"}
+		note := note{BookName: bookName, EmergenceDate: time.Now(), Status: "want", UserAccountID: tokens[c.Value]}
 		err = addNote(note)
 		if err != nil {
 			log.Println(err)
@@ -148,7 +161,7 @@ func signin(rw http.ResponseWriter, r *http.Request) {
 		}
 		if checkPasswordHash(supposedUA.Password, currentUA.Password) {
 			newSessionToken := uuid.Must(uuid.NewV4()).String()
-			tokens[newSessionToken] = 0
+			tokens[newSessionToken] = currentUA.ID
 			http.SetCookie(rw, &http.Cookie{
 				Name:    "session_token",
 				Value:   newSessionToken,

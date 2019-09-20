@@ -28,7 +28,7 @@ func getNotes() []note {
 	result := make([]note, 0)
 	for rows.Next() {
 		tmp := note{}
-		err = rows.Scan(&tmp.ID, &tmp.BookName, &tmp.EmergenceDate, &tmp.BuyingDate, &tmp.ReadingEndDate, &tmp.Status)
+		err = rows.Scan(&tmp.ID, &tmp.BookName, &tmp.EmergenceDate, &tmp.BuyingDate, &tmp.ReadingEndDate, &tmp.Status, &tmp.UserAccountID)
 		if err != nil {
 			log.Panic(err)
 		}
@@ -44,7 +44,7 @@ func getNoteByID(ID string) note {
 	}
 	row := db.QueryRow("SELECT * FROM note WHERE id = $1", intID)
 	tmp := note{}
-	err = row.Scan(&tmp.ID, &tmp.BookName, &tmp.EmergenceDate, &tmp.BuyingDate, &tmp.ReadingEndDate, &tmp.Status)
+	err = row.Scan(&tmp.ID, &tmp.BookName, &tmp.EmergenceDate, &tmp.BuyingDate, &tmp.ReadingEndDate, &tmp.Status, &tmp.UserAccountID)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -52,7 +52,7 @@ func getNoteByID(ID string) note {
 }
 
 func addNote(note note) error {
-	_, err := db.Exec("INSERT INTO note(book_name, emergence_date, buying_date, reading_end_date, status) VALUES ($1, $2, $3, $4, $5)", note.BookName, note.EmergenceDate, note.BuyingDate, note.ReadingEndDate, note.Status)
+	_, err := db.Exec("INSERT INTO note(book_name, emergence_date, buying_date, reading_end_date, status, user_account_id) VALUES ($1, $2, $3, $4, $5, $6)", note.BookName, note.EmergenceDate, note.BuyingDate, note.ReadingEndDate, note.Status, note.UserAccountID)
 	return err
 }
 
@@ -87,4 +87,21 @@ func getUserAccount(email string) (userAccount, error) {
 		return userAccount{}, err
 	}
 	return uA, nil
+}
+
+func getNotesByUserAccountID(userAccountID int) []note {
+	rows, err := db.Query("SELECT * FROM note WHERE user_account_id = $1", userAccountID)
+	if err != nil {
+		log.Panic(err)
+	}
+	result := make([]note, 0)
+	for rows.Next() {
+		tmp := note{}
+		err = rows.Scan(&tmp.ID, &tmp.BookName, &tmp.EmergenceDate, &tmp.BuyingDate, &tmp.ReadingEndDate, &tmp.Status, &tmp.UserAccountID)
+		if err != nil {
+			log.Panic(err)
+		}
+		result = append(result, tmp)
+	}
+	return result
 }
