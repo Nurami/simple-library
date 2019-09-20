@@ -27,6 +27,9 @@
         <div class="form-group">
             <input id="password" type="password" placeholder="Password" class="form-control">
         </div>
+        <div class="form-group">
+            <input id="confirmPassword" type="password" placeholder="Confirm Password" class="form-control">
+        </div>
         <input type="button" value="Sign up" onclick="sendRequest()" class="btn btn-primary btn-block">
     </form>
     <div style="text-align: center">
@@ -38,20 +41,32 @@
 
 <script>
     function sendRequest() {
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', '/signup', false);
-        xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-        var data = {
-            email: document.getElementById("email").value,
-            password: document.getElementById("password").value,
-            name: document.getElementById("name").value,
-        }
-        xhr.send(JSON.stringify(data));
-        if (xhr.status != 200) {
-            alert(xhr.status + ': ' + xhr.statusText + ': ' + xhr.responseText);
+        if (checkPassword(document.getElementById("password").value, document.getElementById("confirmPassword").value)) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/signup', false);
+            xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+            var data = {
+                email: document.getElementById("email").value,
+                password: document.getElementById("password").value,
+                name: document.getElementById("name").value,
+            }
+            xhr.send(JSON.stringify(data));
+            if (xhr.status != 200) {
+                alert(xhr.status + ': ' + xhr.statusText + ': ' + xhr.responseText);
+            } else {
+                alert("success")
+                window.location.replace('/signin');
+            };
         } else {
-            alert("success")
-            window.location.replace('/signin');
-        };
+            alert("Passwords don't match")
+        }
+    }
+
+    function checkPassword(pass1, pass2) {
+        if (pass1 == pass2) {
+            return true
+        } else {
+            return false
+        }
     }
 </script>
